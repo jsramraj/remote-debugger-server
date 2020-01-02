@@ -1,0 +1,27 @@
+{
+  "name": "remote-debuggging",
+  "version": "1.0.0",
+  "description": "Real time remote debugging library backend",
+  "main": "app.js",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "socket.io": "^2.3.0"
+  },
+  "devDependencies": {
+    "nyc": "^14.1.1",
+    "chai": "^4.2.0",
+    "sinon": "^7.5.0",
+    "mocha": "^6.2.2",
+    "nodemon": "1.19.4"
+  },
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon -L --exec npm start",
+    "test": "mocha --reporter spec",
+    "test-nodemon": "nodemon -L --exec npm run test || true",
+    "coverage": "nyc --reporter=lcov --reporter=text-summary npm run test",
+    "coverage-nodemon": "nodemon -L --exec npm run coverage"
+  },
+  "author": "Ramaraj Thangapandi"
+}
