@@ -19,6 +19,17 @@ io.on('connection', client => {
         client.username = username;
         clients.onUserConnected(client, username);
     });
+    client.on('view', function(data) {
+        // console.log("Data: ", data);
+        try {
+            const files = JSON.parse(data);
+            files.forEach(file => {
+                console.log(file.name, " ", file.size / 1000, "MB");
+            });
+          } catch(err) {
+            console.error(err)
+          }
+    });
     client.on('event', data => { /* … */ });
     client.on('disconnect', () => {
         clients.onUserDisConnected(client.username);
@@ -36,12 +47,11 @@ app.get('/', (req, res) => {
 });
 app.get('/commands/view', (req, res, next) => {
     var q = url.parse(req.url, true);
-    console.log("Received command  ", req.url);
-    console.log("Host ", q.host);
-    console.log("Path ", q.path);
-    console.log("Query ", q.query);
-    var userSocket = io.sockets.connected
-    fileOperations.onViewFile(userSocket, q.query);
+    // console.log("Received command  ", req.url);
+    // console.log("Host ", q.host);
+    // console.log("Path ", q.path);
+    // console.log("Query ", q.query);
+    fileOperations.onViewFile(q.query);
     return res.sendStatus(200);
 });
 

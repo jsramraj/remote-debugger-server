@@ -3,10 +3,13 @@ var url = require('url');
 const clients = require('./client-module');
 
 module.exports = {
-    onViewFile: function(socket, data) {
+    onViewFile: function(data) {
         console.log("data: ", data);
         // console.log("Username: ", data[username]);
         var socket = clients.socketForUser("suresh");
-        socket.emit("command", data);
+        var command = {};
+        command.command = 'view';
+        command.destination = data["destination"];
+        socket.emit("command", command);
     }
 }
