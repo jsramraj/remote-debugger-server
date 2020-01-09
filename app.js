@@ -55,9 +55,10 @@ console.log('Server is up and running');
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
-app.get('/', (req, res) => {
-    res.json({"message": "Remote Debugging server"});
-});
+app.use(express.static('public'))
+// app.get('/', (req, res) => {
+//     res.json({"message": "Remote Debugging server"});
+// });
 app.get('/commands/view', (req, res, next) => {
     var q = url.parse(req.url, true);
     // console.log("Received command  ", req.url);

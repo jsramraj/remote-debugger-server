@@ -1,0 +1,29 @@
+<html>
+
+<head>
+    <link href="//cdn.muicss.com/mui-0.10.0/css/mui.min.css" rel="stylesheet" type="text/css" />
+    <script src="//cdn.muicss.com/mui-0.10.0/js/mui.min.js"></script>
+    <script src="jquery-3.4.1.min.js"></script>
+</head>
+
+<body>
+    <form class="mui-form" id="remote-form">
+        <div class="mui-textfield">
+            <input type="text" id="path-textfield" placeholder="Input 1">
+        </div>
+        <button class="mui-btn mui-btn--raised" onclick="openPath()">Go</button>
+    </form>
+</body>
+<script>
+    function openPath() {
+        console.log($('#path-textfield').val());
+        $.ajax({
+            url: "/commands/view?username=suresh&destination=/storage/emulated/0/",
+            success: function (result) {
+                console.log(result);
+            }
+        });
+    }     
+</script>
+
+</html>
