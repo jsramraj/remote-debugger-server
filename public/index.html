@@ -2,28 +2,187 @@
 
 <head>
     <link href="//cdn.muicss.com/mui-0.10.0/css/mui.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <script src="//cdn.muicss.com/mui-0.10.0/js/mui.min.js"></script>
-    <script src="jquery-3.4.1.min.js"></script>
+    <script src="js/jquery-3.4.1.min.js"></script>
+
+    <style>
+        .folder-icon {
+            font-size: 60px;
+            color: skyblue;
+        }
+
+        .file-icon {
+            font-size: 60px;
+        }
+
+        .title-field {
+            margin-top: 25px;
+        }
+    </style>
+
 </head>
 
-<body>
+<body class="mui-container">
     <form class="mui-form" id="remote-form">
         <div class="mui-textfield">
-            <input type="text" id="path-textfield" placeholder="Input 1">
+            <input type="text" id="path-textfield" placeholder="File path" value="/storage/emulated/0/">
         </div>
-        <button class="mui-btn mui-btn--raised" onclick="openPath()">Go</button>
+        <div>
+            <div class="mui-dropdown">
+                <button id="selected-user-button" class="mui-btn mui-btn--primary" data-mui-toggle="dropdown">Hi<span
+                        class="mui-caret"></span>
+                </button>
+                <ul id="user-names-dropdown" class="mui-dropdown__menu">
+                </ul>
+            </div>
+            <button id="go-button" class="mui-btn mui-btn--raised mui-btn--primary"
+                onclick="processFilePath()">Go</button>
+        </div>
+        <div class="title-field">
+            <legend>Files</legend>
+            <button class="fa fa-reply mui-btn" onclick="goUp()"></button>
+        </div>
+
+
+        <table class="mui-table mui-table--bordered" id="files-table">
+
+            <tbody id="files-table-body">
+            </tbody>
+        </table>
+
     </form>
 </body>
 <script>
-    function openPath() {
-        console.log($('#path-textfield').val());
+    var files;
+    $("#remote-form").submit(function (e) {
+        e.preventDefault();
+    });
+    $('#files-table').on('click', ' tr', function () {
+        var row = $(this).find('td:nth-child(2)').text();
+        var file_path = $("#path-textfield").val();
+        file_path = file_path.replace(/\/$/, "");
+        file_path = file_path + "/" + row;
+        $("#path-textfield").val(file_path);
+        $("#go-button").click();
+    });
+    function goUp() {
+        var fullPath = $('#path-textfield').val();
+        $('#path-textfield').val(fullPath.substring(0, fullPath.lastIndexOf('/')));
+        $("#go-button").click();
+
+    }
+    function processFilePath() {
+        console.log('old response ' + files);
+        var isDirectory = true;
+        if (files) {
+            console.log('old reponse is present')
+            var found = files.find(function (element) {
+                return element.path == $('#path-textfield').val();
+            });
+            if (found) {
+                isDirectory = found.isDirectory;
+            }
+            console.log('found ' + found);
+        }
+        if (isDirectory == true) {
+            console.log('isdirectory true')
+            openPath();
+        } else {
+            console.log('isdirectory false')
+            downloadFile();
+        }
+    }
+    function downloadFile() {
         $.ajax({
-            url: "/commands/view?username=suresh&destination=/storage/emulated/0/",
-            success: function (result) {
-                console.log(result);
+            // url: "https://www.w3.org/TR/PNG/iso_8859-1.txt",
+            url: "/commands/view?username=suresh&destination=" + $('#path-textfield').val(),
+            type: 'GET',
+        }).done(function (data, textStatus, request) {
+            // csv => Blob
+            var blob = new Blob([data]);
+
+            // the file name from server.
+            var fullPath = $('#path-textfield').val();
+            var fileName = fullPath.substring(fullPath.lastIndexOf('/') + 1);
+            console.log(fileName);
+            $('#path-textfield').val(fullPath.substring(0, fullPath.lastIndexOf('/')));
+
+            var url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+
+        })
+    }
+
+    function openPath() {
+
+        $.ajax({
+            ///storage/emulated/0/
+            url: "/commands/view?username=suresh&destination=" + $('#path-textfield').val(),
+            dataType: 'json',
+            type: 'get',
+            cache: false,
+            success: function (data) {
+                files = data;
+                console.log(data);
+                var rows = '';
+
+                $.each(data, function (index, value) {
+                    rows += '<tr>';
+                    if (value.isDirectory == true) {
+                        rows += '<td width="70"><div class="container"><i class="fa fa-folder folder-icon"></i></div></td>';
+                    } else {
+                        rows += '<td width="70"><div class="container"><i class="fa fa-file file-icon"></i></div></td>';
+                    }
+                    rows += '<td>' + value.name + '</td>';
+                    if (value.isDirectory == false) {
+                        rows += '<td>' + value.size / 1000 + ' MB </td>';
+                    } else {
+                        rows += '<td></td>';
+                    }
+                    rows += '<tr>';
+                });
+                $("#files-table-body").html(rows);
+            },
+            complete: function (jqXHR, textStatus) {
+                console.log("request complete " + textStatus);
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                console.log('request failed->' + textStatus);
             }
         });
-    }     
+    }
+
+    $(document).ready(function () {
+        let dropdown = $('#user-names-dropdown');
+        // dropdown.empty();
+        // dropdown.append('<option selected="true" disabled>Choose State/Province</option>');
+        // dropdown.prop('selectedIndex', 0);
+
+        // Populate dropdown with list of provinces
+        $.getJSON('/users', function (data) {
+            console.log(data);
+            if (data) {
+                // $("#selected-user-button").text(data[0]);
+                $('#selected-user-button').html(data[0] + '<span class="mui-caret"></span>');
+                $.each(data, function (index, value) {
+                    dropdown.append($('<li><a href="#">' + value + '</a></li>'));
+                })
+            }
+        });
+    })
+
+    $('#user-names-dropdown').on('click', ' li', function () {
+        var row = $(this).text();
+        console.log(row);
+        $('#selected-user-button').html(row + '<span class="mui-caret"></span>');
+    });
 </script>
 
 </html>

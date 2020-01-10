@@ -12,5 +12,8 @@ module.exports = {
     },
     socketForUser: function(username) {
         return connectedClients[username];
+    },
+    connectedUsers: function() {
+        return connectedClients;
     }
 }
