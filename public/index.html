@@ -8,12 +8,12 @@
 
     <style>
         .folder-icon {
-            font-size: 60px;
+            font-size: 25px;
             color: skyblue;
         }
 
         .file-icon {
-            font-size: 60px;
+            font-size: 25px;
         }
 
         .title-field {
@@ -42,6 +42,7 @@
         <div class="title-field">
             <legend>Files</legend>
             <button class="fa fa-reply mui-btn" onclick="goUp()"></button>
+            <button class="fa fa-upload mui-btn" onclick="goUp()"></button>
         </div>
 
 
@@ -91,13 +92,24 @@
         } else {
             console.log('isdirectory false')
             downloadFile();
+            //goUp();
         }
     }
     function downloadFile() {
+        console.log('downloading file...')
         $.ajax({
             // url: "https://www.w3.org/TR/PNG/iso_8859-1.txt",
-            url: "/commands/view?username=suresh&destination=" + $('#path-textfield').val(),
-            type: 'GET',
+            url: "/commands/download?username=suresh&destination=" + $('#path-textfield').val(),
+            type: 'get',
+            success: function (data) {
+                console.log(data)
+            },
+            complete: function (jqXHR, textStatus) {
+                console.log("request complete " + textStatus);
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                console.log('request failed->' + textStatus);
+            }
         }).done(function (data, textStatus, request) {
             // csv => Blob
             var blob = new Blob([data]);
@@ -105,7 +117,8 @@
             // the file name from server.
             var fullPath = $('#path-textfield').val();
             var fileName = fullPath.substring(fullPath.lastIndexOf('/') + 1);
-            console.log(fileName);
+            console.log(fileName)
+            console.log(blob)
             $('#path-textfield').val(fullPath.substring(0, fullPath.lastIndexOf('/')));
 
             var url = window.URL.createObjectURL(blob);
@@ -136,14 +149,18 @@
                 $.each(data, function (index, value) {
                     rows += '<tr>';
                     if (value.isDirectory == true) {
-                        rows += '<td width="70"><div class="container"><i class="fa fa-folder folder-icon"></i></div></td>';
+                        rows += '<td width="25"><div class="container"><i class="fa fa-folder folder-icon"></i></div></td>';
                     } else {
-                        rows += '<td width="70"><div class="container"><i class="fa fa-file file-icon"></i></div></td>';
+                        rows += '<td width="25"><div class="container"><i class="fa fa-file file-icon"></i></div></td>';
                     }
                     rows += '<td>' + value.name + '</td>';
                     if (value.isDirectory == false) {
                         rows += '<td>' + value.size / 1000 + ' MB </td>';
+                        rows += '<td width="25"><div class="container"><i class="fa fa-download file-icon"></i></div></td>';
+                        rows += '<td width="25"><div class="container"><i class="fa fa-trash file-icon"></i></div></td>';
                     } else {
+                        rows += '<td></td>';
+                        rows += '<td></td>';
                         rows += '<td></td>';
                     }
                     rows += '<tr>';

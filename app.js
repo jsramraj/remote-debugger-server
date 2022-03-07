@@ -71,6 +71,16 @@ app.get('/commands/view', (req, res, next) => {
     fileOperations.onViewFile(q.query);
     // return res.sendStatus(200);
 });
+app.get('/commands/download', (req, res, next) => {
+    var q = url.parse(req.url, true);
+    callback = function (err, data) {
+        console.log('got data: ' + data);
+        callback = null;
+        return res.status(200).send(data);
+    };
+    fileOperations.onDownloadFile(q.query);
+    // return res.sendStatus(200);
+});
 
 var upload = multer.single('file');
 app.post('/fileupload', function (req, res) {
@@ -84,7 +94,7 @@ app.post('/fileupload', function (req, res) {
         console.log('File is uploaded to path ', req.file);
 
         fs.readFile(req.file.path, "utf8", function (err, data) {
-            console.log('Content ', data);
+            //console.log('Content ', data);
             if (callback != null) {
                 callback(null, data);
             }
